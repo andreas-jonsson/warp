@@ -46,8 +46,7 @@ func main() {
 			}
 		}
 
-		rnd.Clear()
-		drawVG(rnd.VG())
+		drawVG(rnd.Clear())
 		rnd.Present()
 	}
 }

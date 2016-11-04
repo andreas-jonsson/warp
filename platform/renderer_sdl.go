@@ -115,7 +115,7 @@ func (rnd *sdlRenderer) ToggleFullscreen() {
 	}
 }
 
-func (rnd *sdlRenderer) Clear() {
+func (rnd *sdlRenderer) Clear() *nanovgo.Context {
 	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
@@ -124,6 +124,7 @@ func (rnd *sdlRenderer) Clear() {
 
 	w, h := rnd.window.GetSize()
 	rnd.vgContext.BeginFrame(w, h, float32(w)/float32(h))
+	return rnd.vgContext
 }
 
 func (rnd *sdlRenderer) Present() {
@@ -132,7 +133,7 @@ func (rnd *sdlRenderer) Present() {
 
 	if rnd.debug {
 		if err := gl.GetError(); err != gl.NO_ERROR {
-			panic(err)
+			log.Panicln(err)
 		}
 	}
 }
@@ -146,8 +147,4 @@ func (rnd *sdlRenderer) Shutdown() {
 
 func (rnd *sdlRenderer) SetWindowTitle(title string) {
 	rnd.window.SetTitle(title)
-}
-
-func (rnd *sdlRenderer) VG() *nanovgo.Context {
-	return rnd.vgContext
 }

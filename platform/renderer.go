@@ -20,10 +20,9 @@ package platform
 import "github.com/shibukawa/nanovgo"
 
 type Renderer interface {
-	Clear()
+	Clear() *nanovgo.Context
 	Present()
 	Shutdown()
 	ToggleFullscreen()
 	SetWindowTitle(title string)
-	VG() *nanovgo.Context
 }
