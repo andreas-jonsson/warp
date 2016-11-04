@@ -1,0 +1,25 @@
+version: 0.0.1.{build}
+
+platform: x64
+
+clone_folder: c:\gopath\src\github.com\andreas-jonsson\openwar
+
+environment:
+    GOPATH: c:\gopath
+
+install:
+    - appveyor DownloadFile https://storage.googleapis.com/golang/go1.7.1.windows-amd64.msi
+    - msiexec /i go1.7.3.windows-amd64.msi /q
+    - go version
+    - go env
+
+    - appveyor DownloadFile https://dl.dropboxusercontent.com/u/1955192/TDM-GCC-64.7z
+    - 7z x TDM-GCC-64.7z -oc:\
+
+    - set PATH="%GOPATH%\bin";c:\TDM-GCC-64\bin;%PATH%
+
+build_script:
+    # - go get github.com/akavel/rsrc
+    # - rsrc -ico=tools/package/icon.ico -arch=amd64
+    - go get -v
+    - go build -ldflags="-H windowsgui"

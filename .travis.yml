@@ -1,0 +1,29 @@
+language: go
+
+go:
+    # - 1.6
+    - 1.7
+    # - tip
+
+os:
+    - linux
+    - osx
+
+notifications:
+    email:
+        on_success: never
+        on_failure: always
+
+install:
+    - export SDL_PREFIX=/usr/local && ./tools/sdl_from_source.sh
+
+    # - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then go get golang.org/x/mobile/cmd/gomobile && go get github.com/gopherjs/gopherjs; fi
+    # - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then gomobile init; fi
+
+    - go get -v
+
+script:
+    - go build
+
+    # - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cp ./tools/package/AndroidManifest.xml ./ && gomobile build -target=android -tags=mobile; fi
+    # - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then $GOPATH/bin/gopherjs build openwar.go; fi
