@@ -18,79 +18,163 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package main
 
 import (
-	"fmt"
+	"log"
+	"math"
+	"time"
 
-	"github.com/andreas-jonsson/nanovgo"
-	"github.com/go-gl/gl/v2.1/gl"
-	"github.com/veandco/go-sdl2/sdl"
+	"github.com/andreas-jonsson/warp/platform"
+	"github.com/shibukawa/nanovgo"
 )
 
 func main() {
-	var winTitle string = "Go-SDL2 + Go-GL"
-	var winWidth, winHeight int = 800, 600
-	var window *sdl.Window
-	var context sdl.GLContext
-	var event sdl.Event
-	var running bool
-	var err error
-
-	if err = sdl.Init(sdl.INIT_EVERYTHING); err != nil {
-		panic(err)
+	if err := platform.Init(); err != nil {
+		log.Panicln(err)
 	}
-	defer sdl.Quit()
+	defer platform.Shutdown()
 
-	if err = gl.Init(); err != nil {
-		panic(err)
-	}
-
-	window, err = sdl.CreateWindow(winTitle, sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED,
-		winWidth, winHeight, sdl.WINDOW_OPENGL)
+	rnd, err := platform.NewRenderer(640, 360)
 	if err != nil {
-		panic(err)
+		log.Panicln(err)
 	}
-	defer window.Destroy()
-	context, err = sdl.GL_CreateContext(window)
-	if err != nil {
-		panic(err)
-	}
-	defer sdl.GL_DeleteContext(context)
+	defer rnd.Shutdown()
 
-	gl.Enable(gl.DEPTH_TEST)
-	gl.ClearColor(0.2, 0.2, 0.3, 1.0)
-	gl.ClearDepth(1)
-	gl.DepthFunc(gl.LEQUAL)
-	gl.Viewport(0, 0, int32(winWidth), int32(winHeight))
-
-	ctx, err := nanovgo.NewContext(0 /*nanovgo.AntiAlias | nanovgo.StencilStrokes | nanovgo.Debug*/)
-	if err != nil {
-		panic(err)
-	}
-	defer ctx.Delete()
-
-	running = true
-	for running {
-		for event = sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-			switch t := event.(type) {
-			case *sdl.QuitEvent:
-				running = false
-			case *sdl.MouseMotionEvent:
-				fmt.Printf("[%d ms] MouseMotion\tid:%d\tx:%d\ty:%d\txrel:%d\tyrel:%d\n", t.Timestamp, t.Which, t.X, t.Y, t.XRel, t.YRel)
+	for {
+		for ev := platform.PollEvent(); ev != nil; ev = platform.PollEvent() {
+			switch ev.(type) {
+			case *platform.QuitEvent, *platform.KeyUpEvent:
+				return
 			}
 		}
-		drawgl()
-		sdl.GL_SwapWindow(window)
+
+		rnd.Clear()
+		drawVG(rnd.VG())
+		rnd.Present()
 	}
 }
 
-func drawgl() {
-	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+var startupTime = time.Now()
 
-	gl.Begin(gl.TRIANGLES)
-	gl.Color3f(1.0, 0.0, 0.0)
-	gl.Vertex2f(0.5, 0.0)
-	gl.Color3f(0.0, 1.0, 0.0)
-	gl.Vertex2f(-0.5, -0.5)
-	gl.Color3f(0.0, 0.0, 1.0)
-	gl.Vertex2f(-0.5, 0.5)
-	gl.End()
+func drawVG(ctx *nanovgo.Context) {
+	mouse := platform.Mouse()
+	drawEyes(ctx, 100, 100, 50, 50, float32(mouse.X), float32(mouse.Y), float32(time.Since(startupTime)*time.Second)*0.001)
+}
+
+func drawEyes(ctx *nanovgo.Context, x, y, w, h, mx, my, t float32) {
+	ex := w * 0.23
+	ey := h * 0.5
+	lx := x + ex
+	ly := y + ey
+	rx := x + w - ex
+	ry := y + ey
+	var dx, dy, d, br float32
+	if ex < ey {
+		br = ex * 0.5
+	} else {
+		br = ey * 0.5
+	}
+	blink := float32(1.0 - math.Pow(float64(sinF(t*0.5)), 200)*0.8)
+
+	bg1 := nanovgo.LinearGradient(x, y+h*0.5, x+w*0.1, y+h, nanovgo.RGBA(0, 0, 0, 32), nanovgo.RGBA(0, 0, 0, 16))
+	ctx.BeginPath()
+	ctx.Ellipse(lx+3.0, ly+16.0, ex, ey)
+	ctx.Ellipse(rx+3.0, ry+16.0, ex, ey)
+	ctx.SetFillPaint(bg1)
+	ctx.Fill()
+
+	bg2 := nanovgo.LinearGradient(x, y+h*0.25, x+w*0.1, y+h, nanovgo.RGBA(220, 220, 220, 255), nanovgo.RGBA(128, 128, 128, 255))
+	ctx.BeginPath()
+	ctx.Ellipse(lx, ly, ex, ey)
+	ctx.Ellipse(rx, ry, ex, ey)
+	ctx.SetFillPaint(bg2)
+	ctx.Fill()
+
+	dx = (mx - rx) / (ex * 10)
+	dy = (my - ry) / (ey * 10)
+	d = sqrtF(dx*dx + dy*dy)
+	if d > 1.0 {
+		dx /= d
+		dy /= d
+	}
+	dx *= ex * 0.4
+	dy *= ey * 0.5
+	ctx.BeginPath()
+	ctx.Ellipse(lx+dx, ly+dy+ey*0.25*(1.0-blink), br, br*blink)
+	ctx.SetFillColor(nanovgo.RGBA(32, 32, 32, 255))
+	ctx.Fill()
+
+	dx = (mx - rx) / (ex * 10)
+	dy = (my - ry) / (ey * 10)
+	d = sqrtF(dx*dx + dy*dy)
+	if d > 1.0 {
+		dx /= d
+		dy /= d
+	}
+	dx *= ex * 0.4
+	dy *= ey * 0.5
+	ctx.BeginPath()
+	ctx.Ellipse(rx+dx, ry+dy+ey*0.25*(1.0-blink), br, br*blink)
+	ctx.SetFillColor(nanovgo.RGBA(32, 32, 32, 255))
+	ctx.Fill()
+
+	dx = (mx - rx) / (ex * 10)
+	dy = (my - ry) / (ey * 10)
+	d = sqrtF(dx*dx + dy*dy)
+	if d > 1.0 {
+		dx /= d
+		dy /= d
+	}
+	dx *= ex * 0.4
+	dy *= ey * 0.5
+	ctx.BeginPath()
+	ctx.Ellipse(rx+dx, ry+dy+ey*0.25*(1.0-blink), br, br*blink)
+	ctx.SetFillColor(nanovgo.RGBA(32, 32, 32, 255))
+	ctx.Fill()
+
+	gloss1 := nanovgo.RadialGradient(lx-ex*0.25, ly-ey*0.5, ex*0.1, ex*0.75, nanovgo.RGBA(255, 255, 255, 128), nanovgo.RGBA(255, 255, 255, 0))
+	ctx.BeginPath()
+	ctx.Ellipse(lx, ly, ex, ey)
+	ctx.SetFillPaint(gloss1)
+	ctx.Fill()
+
+	gloss2 := nanovgo.RadialGradient(rx-ex*0.25, ry-ey*0.5, ex*0.1, ex*0.75, nanovgo.RGBA(255, 255, 255, 128), nanovgo.RGBA(255, 255, 255, 0))
+	ctx.BeginPath()
+	ctx.Ellipse(rx, ry, ex, ey)
+	ctx.SetFillPaint(gloss2)
+	ctx.Fill()
+}
+
+func cosF(a float32) float32 {
+	return float32(math.Cos(float64(a)))
+}
+
+func sinF(a float32) float32 {
+	return float32(math.Sin(float64(a)))
+}
+
+func sqrtF(a float32) float32 {
+	return float32(math.Sqrt(float64(a)))
+}
+
+func clampF(a, min, max float32) float32 {
+	if a < min {
+		return min
+	}
+	if a > max {
+		return max
+	}
+	return a
+}
+
+func absF(a float32) float32 {
+	if a > 0.0 {
+		return a
+	}
+	return -a
+}
+
+func maxF(a, b float32) float32 {
+	if a > b {
+		return a
+	}
+	return b
 }
