@@ -15,7 +15,7 @@ notifications:
         on_failure: always
 
 install:
-    - export SDL_PREFIX=/usr/local && sudo ./tools/sdl_from_source.sh
+    - export SDL_PREFIX=/usr/local && ./tools/sdl_from_source.sh
 
     # - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then go get golang.org/x/mobile/cmd/gomobile && go get github.com/gopherjs/gopherjs; fi
     # - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then gomobile init; fi
