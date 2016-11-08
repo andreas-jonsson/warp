@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package menu
 
 import (
-	"github.com/andreas-jonsson/warp/game"
+	"github.com/mode13/warp/game"
 	"github.com/shibukawa/nanovgo"
 )
 
