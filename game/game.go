@@ -22,7 +22,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/andreas-jonsson/openwar/platform"
+	"github.com/andreas-jonsson/warp/platform"
 	"github.com/shibukawa/nanovgo"
 )
 
@@ -36,8 +36,10 @@ type (
 	}
 
 	GameControl interface {
-		SwitchState(to string, args ...interface{})
+		SwitchState(to string, args ...interface{}) error
 		CurrentStateName() string
+		PollAll()
+		PollEvent() platform.Event
 		Terminate()
 	}
 )
@@ -54,8 +56,13 @@ type Game struct {
 	Dt      float64
 }
 
-func NewGame() (*Game, error) {
-	return new(Game), nil
+func NewGame(states map[string]GameState) (*Game, error) {
+	return &Game{Running: true, states: states}, nil
+}
+
+func (g *Game) PollAll() {
+	for g.PollEvent() != nil {
+	}
 }
 
 func (g *Game) PollEvent() platform.Event {
@@ -116,7 +123,9 @@ func (g *Game) Update() error {
 	g.Dt = float64(now.Sub(g.t).Nanoseconds() / int64(time.Millisecond))
 	g.t = now
 
-	err := g.currentState.Update(g)
+	if err := g.currentState.Update(g); err != nil {
+		return err
+	}
 
 	g.numFrames++
 	if time.Since(g.ft).Nanoseconds()/int64(time.Millisecond) >= 1000 {
@@ -125,7 +134,7 @@ func (g *Game) Update() error {
 		g.numFrames = 0
 	}
 
-	return err
+	return nil
 }
 
 func (g *Game) Render(ctx *nanovgo.Context) error {

@@ -30,10 +30,10 @@ import (
 const fulscreenFlag = sdl.WINDOW_FULLSCREEN_DESKTOP //sdl.WINDOW_FULLSCREEN
 
 type sdlRenderer struct {
-	window    *sdl.Window
-	glContext sdl.GLContext
-	vgContext *nanovgo.Context
-	debug     bool
+	window         *sdl.Window
+	glContext      sdl.GLContext
+	vgContext      *nanovgo.Context
+	debug, novsync bool
 }
 
 func NewRenderer(w, h int, data ...interface{}) (Renderer, error) {
@@ -70,6 +70,8 @@ func NewRenderer(w, h int, data ...interface{}) (Renderer, error) {
 			case "debug":
 				rnd.debug = true
 				vgFlags |= nanovgo.Debug
+			case "novsync":
+				rnd.novsync = true
 			case "title":
 				i++
 				title = data[i].(string)
@@ -110,8 +112,12 @@ func NewRenderer(w, h int, data ...interface{}) (Renderer, error) {
 		return &rnd, err
 	}
 
-	sdl.GL_SetSwapInterval(1)
 	gl.ContextWatcher.OnMakeCurrent(nil)
+	if rnd.novsync {
+		sdl.GL_SetSwapInterval(0)
+	} else {
+		sdl.GL_SetSwapInterval(1)
+	}
 
 	rnd.vgContext, err = nanovgo.NewContext(vgFlags)
 	if err != nil {

@@ -24,6 +24,8 @@ import (
 	"time"
 
 	"github.com/andreas-jonsson/warp/game"
+	"github.com/andreas-jonsson/warp/game/menu"
+	"github.com/andreas-jonsson/warp/game/play"
 	"github.com/andreas-jonsson/warp/platform"
 	"github.com/shibukawa/nanovgo"
 )
@@ -34,19 +36,25 @@ func main() {
 	}
 	defer platform.Shutdown()
 
-	rnd, err := platform.NewRenderer(0, 0, "div", 2)
+	rnd, err := platform.NewRenderer(0, 0, "div", 2, "novsync")
 	if err != nil {
 		log.Panicln(err)
 	}
 	defer rnd.Shutdown()
 
-	g, err := game.NewGame(rnd)
+	states := map[string]game.GameState{
+		"menu": menu.NewMenuState(),
+		"play": play.NewPlayState(),
+	}
+
+	g, err := game.NewGame(states)
 	if err != nil {
 		log.Panicln(err)
 	}
 	defer g.Shutdown()
 
-	if err := g.SwitchState("menu"); err != nil {
+	var gctl game.GameControl = g
+	if err := g.SwitchState("menu", gctl); err != nil {
 		log.Panicln(err)
 	}
 
