@@ -49,15 +49,14 @@ type Game struct {
 	states       map[string]GameState
 
 	t, ft     time.Time
+	fps       int
+	dt        float64
 	numFrames int
-
-	Running bool
-	Fps     int
-	Dt      float64
+	running   bool
 }
 
 func NewGame(states map[string]GameState) (*Game, error) {
-	return &Game{Running: true, states: states}, nil
+	return &Game{running: true, states: states}, nil
 }
 
 func (g *Game) PollAll() {
@@ -74,11 +73,11 @@ func (g *Game) PollEvent() platform.Event {
 
 		switch t := event.(type) {
 		case *platform.QuitEvent:
-			g.Running = false
+			g.running = false
 		case *platform.KeyDownEvent:
 			switch t.Key {
 			case platform.KeyEsc:
-				g.Running = false
+				g.running = false
 				continue
 			}
 			return event
@@ -114,13 +113,21 @@ func (g *Game) SwitchState(to string, args ...interface{}) error {
 	return nil
 }
 
+func (g *Game) Running() bool {
+	return g.running
+}
+
+func (g *Game) Timing() (float64, int) {
+	return g.dt, g.fps
+}
+
 func (g *Game) Terminate() {
-	g.Running = false
+	g.running = false
 }
 
 func (g *Game) Update() error {
 	now := time.Now()
-	g.Dt = float64(now.Sub(g.t).Nanoseconds() / int64(time.Millisecond))
+	g.dt = float64(now.Sub(g.t).Nanoseconds() / int64(time.Millisecond))
 	g.t = now
 
 	if err := g.currentState.Update(g); err != nil {
@@ -129,7 +136,7 @@ func (g *Game) Update() error {
 
 	g.numFrames++
 	if time.Since(g.ft).Nanoseconds()/int64(time.Millisecond) >= 1000 {
-		g.Fps = g.numFrames
+		g.fps = g.numFrames
 		g.ft = now
 		g.numFrames = 0
 	}

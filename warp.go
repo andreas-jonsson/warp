@@ -58,14 +58,15 @@ func main() {
 		log.Panicln(err)
 	}
 
-	for g.Running {
+	for g.Running() {
 		ctx := rnd.Clear()
 
 		if err := g.Update(); err != nil {
 			panic(err)
 		}
 
-		rnd.SetWindowTitle(fmt.Sprintf("Warp - %d fps", g.Fps))
+		_, fps := g.Timing()
+		rnd.SetWindowTitle(fmt.Sprintf("Warp - %d fps", fps))
 
 		if err := g.Render(ctx); err != nil {
 			panic(err)
