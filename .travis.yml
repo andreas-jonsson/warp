@@ -15,7 +15,8 @@ notifications:
         on_failure: always
 
 install:
-    - export SDL_PREFIX=/usr/local && ./tools/sdl_from_source.sh
+    - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install sdl2 sdl2_mixer; fi
+    - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -y libsdl2-dev libsdl2-mixer-dev; fi
 
     # - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then go get golang.org/x/mobile/cmd/gomobile && go get github.com/gopherjs/gopherjs; fi
     # - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then gomobile init; fi

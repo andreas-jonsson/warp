@@ -2,7 +2,7 @@ version: 0.0.1.{build}
 
 platform: x64
 
-clone_folder: c:\gopath\src\github.com\andreas-jonsson\warp
+clone_folder: c:\gopath\src\github.com\mode13\warp
 
 environment:
     GOPATH: c:\gopath
