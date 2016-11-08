@@ -27,6 +27,8 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
+const fulscreenFlag = sdl.WINDOW_FULLSCREEN_DESKTOP //sdl.WINDOW_FULLSCREEN
+
 type sdlRenderer struct {
 	window    *sdl.Window
 	glContext sdl.GLContext
@@ -38,11 +40,23 @@ func NewRenderer(w, h int, data ...interface{}) (Renderer, error) {
 	var (
 		err error
 		rnd sdlRenderer
+		dm  sdl.DisplayMode
 
 		title           = "Warp"
 		sdlFlags uint32 = sdl.WINDOW_SHOWN | sdl.WINDOW_OPENGL
 		vgFlags         = nanovgo.StencilStrokes
 	)
+
+	if err = sdl.GetDesktopDisplayMode(0, &dm); err != nil {
+		return &rnd, err
+	}
+
+	if w <= 0 {
+		w = int(dm.W)
+	}
+	if h <= 0 {
+		h = int(dm.H)
+	}
 
 	for i := 0; i < len(data); i++ {
 		handled := true
@@ -52,14 +66,18 @@ func NewRenderer(w, h int, data ...interface{}) (Renderer, error) {
 		if ok {
 			switch ps {
 			case "fullscreen":
-				//flags |= sdl.WINDOW_FULLSCREEN
-				sdlFlags |= sdl.WINDOW_FULLSCREEN_DESKTOP
+				sdlFlags |= fulscreenFlag
 			case "debug":
 				rnd.debug = true
 				vgFlags |= nanovgo.Debug
 			case "title":
 				i++
 				title = data[i].(string)
+			case "div":
+				i++
+				n := data[i].(int)
+				w /= n
+				h /= n
 			default:
 				handled = false
 			}
@@ -106,12 +124,11 @@ func NewRenderer(w, h int, data ...interface{}) (Renderer, error) {
 }
 
 func (rnd *sdlRenderer) ToggleFullscreen() {
-	isFullscreen := (rnd.window.GetFlags() & sdl.WINDOW_FULLSCREEN) != 0
+	isFullscreen := (rnd.window.GetFlags() & fulscreenFlag) != 0
 	if isFullscreen {
 		rnd.window.SetFullscreen(0)
 	} else {
-		rnd.window.SetFullscreen(sdl.WINDOW_FULLSCREEN_DESKTOP)
-		//rnd.window.SetFullscreen(sdl.WINDOW_FULLSCREEN)
+		rnd.window.SetFullscreen(fulscreenFlag)
 	}
 }
 

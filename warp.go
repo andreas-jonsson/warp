@@ -18,10 +18,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package main
 
 import (
+	"fmt"
 	"log"
 	"math"
 	"time"
 
+	"github.com/andreas-jonsson/warp/game"
 	"github.com/andreas-jonsson/warp/platform"
 	"github.com/shibukawa/nanovgo"
 )
@@ -32,21 +34,37 @@ func main() {
 	}
 	defer platform.Shutdown()
 
-	rnd, err := platform.NewRenderer(640, 360)
+	rnd, err := platform.NewRenderer(0, 0, "div", 2)
 	if err != nil {
 		log.Panicln(err)
 	}
 	defer rnd.Shutdown()
 
-	for {
-		for ev := platform.PollEvent(); ev != nil; ev = platform.PollEvent() {
-			switch ev.(type) {
-			case *platform.QuitEvent, *platform.KeyUpEvent:
-				return
-			}
+	g, err := game.NewGame(rnd)
+	if err != nil {
+		log.Panicln(err)
+	}
+	defer g.Shutdown()
+
+	if err := g.SwitchState("menu"); err != nil {
+		log.Panicln(err)
+	}
+
+	for g.Running {
+		ctx := rnd.Clear()
+
+		if err := g.Update(); err != nil {
+			panic(err)
+		}
+
+		rnd.SetWindowTitle(fmt.Sprintf("Warp - %d fps", g.Fps))
+
+		if err := g.Render(ctx); err != nil {
+			panic(err)
 		}
 
 		drawVG(rnd.Clear())
+
 		rnd.Present()
 	}
 }
