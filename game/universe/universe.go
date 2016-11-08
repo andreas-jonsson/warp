@@ -18,71 +18,50 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package universe
 
 import (
-	"time"
-
+	"github.com/mode13/warp/game/entity"
+	"github.com/mode13/warp/platform"
 	"github.com/shibukawa/nanovgo"
 	"github.com/ungerik/go3d/vec2"
 )
 
-const LightSpeed = 1.0
-
-type Entity interface {
-	Id() uint64
-	Position() vec2.T
-	Render(ctx *nanovgo.Context)
-	Clone() Entity
+type Universe struct {
+	entities map[uint64]entity.Entity
 }
 
-type (
-	universeState struct {
-		timeStamp time.Time
-		entities  map[uint64]Entity
-	}
-
-	universe struct {
-		frames   []universeState
-		entities []Entity
-
-		frameIdx,
-		maxFrames int64
-		fps int
-	}
-)
-
-func NewUniverse(rad float32, fps int) *universe {
-	lightTravelTime := rad * 2.0 / LightSpeed
-	maxFrames := int64(lightTravelTime * float32(fps))
-
-	return &universe{fps: fps, maxFrames: maxFrames, frames: make([]universeState, maxFrames)}
+func NewUniverse() *Universe {
+	return &Universe{entities: make(map[uint64]entity.Entity)}
 }
 
-func (uni *universe) NewFrame() {
-	state := universeState{timeStamp: time.Now(), entities: make(map[uint64]Entity)}
+func (uni *Universe) SpawnEntity(ty string, owner int) entity.Entity {
+	entity := entity.NewEntity(ty, platform.NewId64(), owner)
+	uni.entities[entity.Id()] = entity
+	return entity
+}
+
+func (uni *Universe) FindAll(pos vec2.T, rad float32, filter uint32) []entity.Entity {
+	return nil
+}
+
+func (uni *Universe) Update() error {
 	for _, entity := range uni.entities {
-		state.entities[entity.Id()] = entity.Clone()
-	}
-
-	uni.frames[uni.frameIdx] = state
-	uni.frameIdx++
-}
-
-func (uni *universe) StateFromObserver(pos *vec2.T) []Entity {
-	entities := make([]Entity, 1)
-
-	for _, entity := range uni.entities {
-		p := entity.Position()
-		dist := pos.Sub(&p).Length()
-		frameDist := int64((dist / LightSpeed) * float32(uni.fps))
-		idx := uni.frameIdx - frameDist
-
-		if idx < 0 {
-			idx = 0
+		if err := entity.Update(uni); err != nil {
+			return err
 		}
-
-		frame := uni.frames[idx]
-		entity = frame.entities[entity.Id()]
-		entities = append(entities, entity)
 	}
 
-	return entities
+	for id, entity := range uni.entities {
+		if !entity.Alive() {
+			delete(uni.entities, id)
+		}
+	}
+	return nil
+}
+
+func (uni *Universe) Render(ctx *nanovgo.Context) error {
+	for _, entity := range uni.entities {
+		if err := entity.Render(ctx); err != nil {
+			return err
+		}
+	}
+	return nil
 }

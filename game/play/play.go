@@ -19,15 +19,18 @@ package play
 
 import (
 	"github.com/mode13/warp/game"
+	_ "github.com/mode13/warp/game/entity/mothership"
+	"github.com/mode13/warp/game/universe"
 	"github.com/shibukawa/nanovgo"
 )
 
 type playState struct {
+	uni  *universe.Universe
 	gctl game.GameControl
 }
 
 func NewPlayState() *playState {
-	return &playState{}
+	return &playState{uni: universe.NewUniverse()}
 }
 
 func (s *playState) Name() string {
@@ -36,6 +39,8 @@ func (s *playState) Name() string {
 
 func (s *playState) Enter(from game.GameState, args ...interface{}) error {
 	s.gctl = args[0].(game.GameControl)
+
+	s.uni.SpawnEntity("mothership", 0)
 	return nil
 }
 
@@ -45,9 +50,9 @@ func (s *playState) Exit(to game.GameState) error {
 
 func (s *playState) Update(gctl game.GameControl) error {
 	gctl.PollAll()
-	return nil
+	return s.uni.Update()
 }
 
 func (s *playState) Render(ctx *nanovgo.Context) error {
-	return nil
+	return s.uni.Render(ctx)
 }
