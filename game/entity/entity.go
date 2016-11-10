@@ -18,10 +18,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package entity
 
 import (
+	"image"
 	"log"
 
 	"github.com/mode13/nanovgo"
 	"github.com/ungerik/go3d/vec2"
+	"github.com/ungerik/go3d/vec3"
 )
 
 const (
@@ -41,6 +43,8 @@ type (
 	Universe interface {
 		SpawnEntity(ty string, owner int) Entity
 		FindAll(pos vec2.T, rad float32, filter uint32) []Entity
+		CameraPosition() vec3.T
+		Bounds() image.Rectangle
 	}
 
 	Entity interface {

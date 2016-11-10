@@ -22,8 +22,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/mode13/warp/platform"
 	"github.com/mode13/nanovgo"
+	"github.com/mode13/warp/platform"
 )
 
 type (
@@ -97,19 +97,22 @@ func (g *Game) SwitchState(to string, args ...interface{}) error {
 		return fmt.Errorf("invalid state: %s", to)
 	}
 
-	if g.currentState != nil {
-		log.Printf("Exiting state: %v", g.currentState.Name())
-		if err := g.currentState.Exit(newState); err != nil {
-			return nil
+	currentState := g.currentState
+
+	if currentState != nil {
+		log.Printf("Exiting state: %v", currentState.Name())
+		if err := currentState.Exit(newState); err != nil {
+			return err
 		}
 	}
 
+	g.currentState = newState
+
 	log.Printf("Enter state: %v", to)
-	if err := newState.Enter(g.currentState, args...); err != nil {
+	if err := newState.Enter(currentState, args...); err != nil {
 		return err
 	}
 
-	g.currentState = newState
 	return nil
 }
 

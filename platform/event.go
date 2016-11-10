@@ -49,6 +49,10 @@ type (
 
 	KeyDownEvent KeyUpEvent
 
+	MouseWheelEvent struct {
+		X, Y int
+	}
+
 	MouseMotionEvent struct {
 		X, Y, XRel, YRel int
 	}

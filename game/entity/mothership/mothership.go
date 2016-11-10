@@ -18,17 +18,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package mothership
 
 import (
-	"github.com/mode13/warp/game/entity"
+	"math"
+
 	"github.com/mode13/nanovgo"
+	"github.com/mode13/warp/game/entity"
 	"github.com/ungerik/go3d/vec2"
 )
 
-const hp = 100
+const (
+	hp         = 100
+	circleSize = 150
+)
 
 type ship struct {
-	id  uint64
-	hp  float32
-	pos vec2.T
+	id         uint64
+	hp         float32
+	numCircles int
+	pos        vec2.T
 }
 
 func init() {
@@ -53,13 +59,27 @@ func (e *ship) TakeFire(damage float32, ty entity.DamageType) bool {
 }
 
 func (e *ship) Update(uni entity.Universe) error {
+	if e.numCircles == 0 {
+		size := uni.Bounds().Size()
+		diagonal := math.Sqrt(float64(size.X*size.X + size.Y*size.Y))
+		e.numCircles = int(diagonal/circleSize) + 1
+	}
 	return nil
 }
 
 func (e *ship) Render(ctx *nanovgo.Context) error {
 	ctx.BeginPath()
-	ctx.SetFillColor(nanovgo.RGBA(255, 0, 0, 255))
-	ctx.Circle(0, 0, 1000)
+	ctx.SetFillColor(nanovgo.RGBA(25, 25, 200, 200))
+	ctx.Circle(e.pos[0], e.pos[1], 10)
 	ctx.Fill()
+
+	for i := 1; i < e.numCircles; i++ {
+		ctx.BeginPath()
+		ctx.Circle(e.pos[0], e.pos[1], float32(i)*150)
+		ctx.SetStrokeColor(nanovgo.RGBA(0, 0, 200, 175))
+		ctx.SetStrokeWidth(1)
+		ctx.Stroke()
+	}
+
 	return nil
 }

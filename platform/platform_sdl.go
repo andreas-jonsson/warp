@@ -135,6 +135,11 @@ func PollEvent() Event {
 			XRel: int(t.XRel),
 			YRel: int(t.YRel),
 		}
+	case *sdl.MouseWheelEvent:
+		return &MouseWheelEvent{
+			X: int(t.X),
+			Y: int(t.Y),
+		}
 	}
 
 	return nil

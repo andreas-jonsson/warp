@@ -1,3 +1,5 @@
+// +build ignore
+
 /*
 Copyright (C) 2016 Andreas T Jonsson
 
@@ -15,38 +17,33 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package menu
+package main
 
 import (
-	"github.com/mode13/nanovgo"
-	"github.com/mode13/warp/game"
+	"log"
+	"net/http"
+	"path"
+
+	"github.com/shurcooL/vfsgen"
 )
 
-type menuState struct {
+type fsWrapper struct {
+	http.FileSystem
 }
 
-func NewMenuState() *menuState {
-	return &menuState{}
+func (fs fsWrapper) Open(name string) (http.File, error) {
+	return fs.FileSystem.Open(path.Join("data", "src", name))
 }
 
-func (s *menuState) Name() string {
-	return "menu"
-}
-
-func (s *menuState) Enter(from game.GameState, args ...interface{}) error {
-	args[0].(game.GameControl).SwitchState("play", args[0])
-	return nil
-}
-
-func (s *menuState) Exit(to game.GameState) error {
-	return nil
-}
-
-func (s *menuState) Update(gctl game.GameControl) error {
-	gctl.PollAll()
-	return nil
-}
-
-func (s *menuState) Render(ctx *nanovgo.Context) error {
-	return nil
+func main() {
+	fs := fsWrapper{http.Dir("")}
+	err := vfsgen.Generate(&fs, vfsgen.Options{
+		Filename:     path.Join("data", "data.go"),
+		PackageName:  "data",
+		BuildTags:    "!dev",
+		VariableName: "FS",
+	})
+	if err != nil {
+		log.Fatalln(err)
+	}
 }
