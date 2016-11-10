@@ -106,22 +106,16 @@ func (uni *Universe) Render(ctx *nanovgo.Context) error {
 	ctx.Scissor(uni.cameraPos[0], uni.cameraPos[1], imgSizeX, imgSizeY)
 
 	const parallaxEffect = 0.8
+
+	ctx.Save()
 	ctx.Translate(uni.cameraPos[0]*parallaxEffect, uni.cameraPos[1]*parallaxEffect)
 
 	ctx.BeginPath()
 	ctx.SetFillPaint(imgPaint)
-	ctx.Rect(0, 0, float32(imgSize.X), float32(imgSize.Y))
+	ctx.Rect(0, 0, imgSizeX, imgSizeY)
 	ctx.Fill()
 
-	scale := uni.cameraPos[2]
-
-	//fmt.Println(scale)
-	if scale < 1 {
-		scale = 1
-	}
-
-	ctx.ResetTransform()
-	ctx.Scale(scale, scale)
+	ctx.Restore()
 	ctx.Translate(uni.cameraPos[0], uni.cameraPos[1])
 
 	// Draw border

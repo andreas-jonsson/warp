@@ -90,9 +90,7 @@ func (s *playState) Update(gctl game.GameControl) error {
 				s.cameraPos = vec3.T{s.cameraPos[0] + float32(t.XRel), s.cameraPos[1] + float32(t.YRel), s.cameraPos[2]}
 			}
 		case *platform.MouseWheelEvent:
-			if s.mouseGrab {
-				s.cameraPos[2] = float32(t.Y)
-			}
+			s.cameraPos[2] += float32(t.Y)
 		}
 	}
 
