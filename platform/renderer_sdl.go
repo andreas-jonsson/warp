@@ -23,7 +23,7 @@ import (
 	"log"
 
 	"github.com/goxjs/gl"
-	"github.com/shibukawa/nanovgo"
+	"github.com/mode13/nanovgo"
 	"github.com/veandco/go-sdl2/sdl"
 )
 

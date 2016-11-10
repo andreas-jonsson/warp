@@ -19,7 +19,7 @@ package mothership
 
 import (
 	"github.com/mode13/warp/game/entity"
-	"github.com/shibukawa/nanovgo"
+	"github.com/mode13/nanovgo"
 	"github.com/ungerik/go3d/vec2"
 )
 

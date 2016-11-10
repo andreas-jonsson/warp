@@ -23,7 +23,7 @@ import (
 	"time"
 
 	"github.com/mode13/warp/platform"
-	"github.com/shibukawa/nanovgo"
+	"github.com/mode13/nanovgo"
 )
 
 type (

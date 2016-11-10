@@ -19,7 +19,7 @@ package menu
 
 import (
 	"github.com/mode13/warp/game"
-	"github.com/shibukawa/nanovgo"
+	"github.com/mode13/nanovgo"
 )
 
 type menuState struct {

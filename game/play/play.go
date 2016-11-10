@@ -21,7 +21,7 @@ import (
 	"github.com/mode13/warp/game"
 	_ "github.com/mode13/warp/game/entity/mothership"
 	"github.com/mode13/warp/game/universe"
-	"github.com/shibukawa/nanovgo"
+	"github.com/mode13/nanovgo"
 )
 
 type playState struct {
