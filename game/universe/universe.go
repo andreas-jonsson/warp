@@ -35,6 +35,7 @@ type Universe struct {
 	backgroundImage   image.Image
 	backgroundImageID int
 	cameraPos         vec3.T
+	tick              float64
 }
 
 func NewUniverse() *Universe {
@@ -76,8 +77,10 @@ func (uni *Universe) Bounds() image.Rectangle {
 	return uni.backgroundImage.Bounds()
 }
 
-func (uni *Universe) Update(cameraPos vec3.T) error {
+func (uni *Universe) Update(dt float64, cameraPos vec3.T) error {
 	uni.cameraPos = cameraPos
+	uni.tick += dt
+
 	for _, entity := range uni.entities {
 		if err := entity.Update(uni); err != nil {
 			return err
@@ -94,16 +97,16 @@ func (uni *Universe) Update(cameraPos vec3.T) error {
 
 func (uni *Universe) Render(ctx *nanovgo.Context) error {
 	if uni.backgroundImageID < 0 {
-		uni.backgroundImageID = ctx.CreateImageFromGoImage(nanovgo.ImagePreMultiplied, uni.backgroundImage)
+		uni.backgroundImageID = ctx.CreateImageFromGoImage(0, uni.backgroundImage)
 	}
 
 	imgSize := uni.backgroundImage.Bounds().Size()
 	imgSizeX := float32(imgSize.X)
 	imgSizeY := float32(imgSize.Y)
 
-	imgPaint := nanovgo.ImagePattern(0, 0, imgSizeX, imgSizeY, 0, uni.backgroundImageID, 0.75)
+	imgPaint := nanovgo.ImagePattern(0, 0, imgSizeX, imgSizeY, 0, uni.backgroundImageID, 1)
 
-	ctx.Scissor(uni.cameraPos[0], uni.cameraPos[1], imgSizeX, imgSizeY)
+	ctx.Scissor(uni.cameraPos[0]-1, uni.cameraPos[1]-1, imgSizeX+2, imgSizeY+2)
 
 	const parallaxEffect = 0.8
 
@@ -132,7 +135,7 @@ func (uni *Universe) Render(ctx *nanovgo.Context) error {
 	for x := 0; x <= imgSize.X; x += gridStep {
 		if x%(5*gridStep) == 0 {
 			ctx.SetStrokeWidth(2)
-			ctx.SetStrokeColor(nanovgo.RGBA(0, 0, 200, 100))
+			ctx.SetStrokeColor(nanovgo.RGBA(0, 0, 255, 255))
 		} else {
 			ctx.SetStrokeWidth(1)
 			ctx.SetStrokeColor(nanovgo.RGBA(0, 0, 200, 75))
@@ -147,7 +150,7 @@ func (uni *Universe) Render(ctx *nanovgo.Context) error {
 	for y := 0; y <= imgSize.Y; y += gridStep {
 		if y%(5*gridStep) == 0 {
 			ctx.SetStrokeWidth(2)
-			ctx.SetStrokeColor(nanovgo.RGBA(0, 0, 200, 100))
+			ctx.SetStrokeColor(nanovgo.RGBA(0, 0, 255, 255))
 		} else {
 			ctx.SetStrokeWidth(1)
 			ctx.SetStrokeColor(nanovgo.RGBA(0, 0, 200, 75))

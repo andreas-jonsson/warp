@@ -38,6 +38,7 @@ type (
 	GameControl interface {
 		SwitchState(to string, args ...interface{}) error
 		CurrentStateName() string
+		Timing() (float64, int)
 		PollAll()
 		PollEvent() platform.Event
 		Terminate()

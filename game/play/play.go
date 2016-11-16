@@ -94,7 +94,8 @@ func (s *playState) Update(gctl game.GameControl) error {
 		}
 	}
 
-	return s.uni.Update(s.cameraPos)
+	dt, _ := gctl.Timing()
+	return s.uni.Update(dt, s.cameraPos)
 }
 
 func (s *playState) Render(ctx *nanovgo.Context) error {
@@ -107,13 +108,14 @@ func (s *playState) Render(ctx *nanovgo.Context) error {
 		warpTime := time.Since(s.warpStartTime).Seconds()
 
 		ctx.BeginPath()
+		ctx.SetFillColor(nanovgo.RGBA(0, 0, 255, 255))
 		ctx.Circle(warpScreenPos[0], warpScreenPos[1], float32(warpTime*10+4))
 		ctx.Fill()
 
 		ctx.BeginPath()
 		ctx.MoveTo(0, 0)
 		ctx.LineTo(warpScreenPos[0], warpScreenPos[1])
-		ctx.SetStrokeColor(nanovgo.RGBA(0, 0, 200, 75))
+		ctx.SetStrokeColor(nanovgo.RGBA(0, 0, 255, 255))
 		ctx.SetStrokeWidth(2)
 		ctx.Stroke()
 	}

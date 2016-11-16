@@ -35,7 +35,7 @@ func main() {
 	}
 	defer platform.Shutdown()
 
-	rnd, err := platform.NewRenderer(0, 0, "div", 2, "novsync")
+	rnd, err := platform.NewRenderer(platform.ConfigWithDiv(2), platform.ConfigWithNoVSync)
 	if err != nil {
 		log.Panicln(err)
 	}
