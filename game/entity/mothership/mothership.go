@@ -20,8 +20,8 @@ package mothership
 import (
 	"math"
 
-	"github.com/mode13/nanovgo"
-	"github.com/mode13/warp/game/entity"
+	"github.com/andreas-jonsson/nanovgo"
+	"github.com/andreas-jonsson/warp/game/entity"
 	"github.com/ungerik/go3d/vec2"
 )
 

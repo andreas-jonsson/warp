@@ -23,10 +23,10 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/mode13/warp/game"
-	"github.com/mode13/warp/game/menu"
-	"github.com/mode13/warp/game/play"
-	"github.com/mode13/warp/platform"
+	"github.com/andreas-jonsson/warp/game"
+	"github.com/andreas-jonsson/warp/game/menu"
+	"github.com/andreas-jonsson/warp/game/play"
+	"github.com/andreas-jonsson/warp/platform"
 )
 
 func main() {

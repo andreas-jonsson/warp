@@ -25,7 +25,7 @@ import (
 	"unsafe"
 
 	"github.com/goxjs/gl"
-	"github.com/mode13/nanovgo"
+	"github.com/andreas-jonsson/nanovgo"
 	"github.com/veandco/go-sdl2/sdl"
 )
 

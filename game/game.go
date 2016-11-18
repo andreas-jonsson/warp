@@ -22,8 +22,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/mode13/nanovgo"
-	"github.com/mode13/warp/platform"
+	"github.com/andreas-jonsson/nanovgo"
+	"github.com/andreas-jonsson/warp/platform"
 )
 
 type (

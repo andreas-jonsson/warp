@@ -22,10 +22,10 @@ import (
 	_ "image/jpeg"
 	"log"
 
-	"github.com/mode13/nanovgo"
-	"github.com/mode13/warp/data"
-	"github.com/mode13/warp/game/entity"
-	"github.com/mode13/warp/platform"
+	"github.com/andreas-jonsson/nanovgo"
+	"github.com/andreas-jonsson/warp/data"
+	"github.com/andreas-jonsson/warp/game/entity"
+	"github.com/andreas-jonsson/warp/platform"
 	"github.com/ungerik/go3d/vec2"
 	"github.com/ungerik/go3d/vec3"
 )

@@ -18,8 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package menu
 
 import (
-	"github.com/mode13/nanovgo"
-	"github.com/mode13/warp/game"
+	"github.com/andreas-jonsson/nanovgo"
+	"github.com/andreas-jonsson/warp/game"
 )
 
 type menuState struct {

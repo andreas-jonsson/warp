@@ -21,13 +21,13 @@ import (
 	"log"
 	"time"
 
-	"github.com/mode13/nanovgo"
-	"github.com/mode13/nanovgo/svg"
-	"github.com/mode13/warp/data"
-	"github.com/mode13/warp/game"
-	_ "github.com/mode13/warp/game/entity/mothership"
-	"github.com/mode13/warp/game/universe"
-	"github.com/mode13/warp/platform"
+	"github.com/andreas-jonsson/nanovgo"
+	"github.com/andreas-jonsson/svgo/svgo"
+	"github.com/andreas-jonsson/warp/data"
+	"github.com/andreas-jonsson/warp/game"
+	_ "github.com/andreas-jonsson/warp/game/entity/mothership"
+	"github.com/andreas-jonsson/warp/game/universe"
+	"github.com/andreas-jonsson/warp/platform"
 	"github.com/ungerik/go3d/vec3"
 )
 
@@ -37,7 +37,7 @@ type playState struct {
 	mouseGrab bool
 	cameraPos vec3.T
 
-	svg *svg.Svg
+	svg *svgo.Svg
 
 	warping       bool
 	warpPos       vec3.T
@@ -51,7 +51,7 @@ func NewPlayState() *playState {
 	}
 	defer fp.Close()
 
-	svg, err := svg.ParseSvg(fp, 1)
+	svg, err := svgo.ParseSvg(fp, 1)
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -136,7 +136,7 @@ func (s *playState) Render(ctx *nanovgo.Context) error {
 		ctx.Stroke()
 	}
 
-	if err := svg.Render(ctx, s.svg); err != nil {
+	if err := svgo.Render(ctx, s.svg); err != nil {
 		panic(err)
 	}
 

@@ -21,7 +21,7 @@ import (
 	"image"
 	"log"
 
-	"github.com/mode13/nanovgo"
+	"github.com/andreas-jonsson/nanovgo"
 	"github.com/ungerik/go3d/vec2"
 	"github.com/ungerik/go3d/vec3"
 )

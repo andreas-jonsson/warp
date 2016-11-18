@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package platform
 
-import "github.com/mode13/nanovgo"
+import "github.com/andreas-jonsson/nanovgo"
 
 type Renderer interface {
 	Clear() *nanovgo.Context
