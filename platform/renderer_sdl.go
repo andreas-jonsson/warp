@@ -29,7 +29,7 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
-const blurEffect = true
+const blurEffect = false
 
 const fulscreenFlag = sdl.WINDOW_FULLSCREEN_DESKTOP //sdl.WINDOW_FULLSCREEN
 
@@ -37,37 +37,37 @@ type Config func(*sdlRenderer) error
 
 func ConfigWithSize(w, h int) Config {
 	return func(rnd *sdlRenderer) error {
-		rnd.windowSize = image.Point{w, h}
+		rnd.config.windowSize = image.Point{w, h}
 		return nil
 	}
 }
 
 func ConfigWithTitle(title string) Config {
 	return func(rnd *sdlRenderer) error {
-		rnd.windowTitle = title
+		rnd.config.windowTitle = title
 		return nil
 	}
 }
 
 func ConfigWithDiv(n int) Config {
 	return func(rnd *sdlRenderer) error {
-		rnd.resolutionDiv = n
+		rnd.config.resolutionDiv = n
 		return nil
 	}
 }
 
 func ConfigWithFulscreen(rnd *sdlRenderer) error {
-	rnd.fulscreen = true
+	rnd.config.fulscreen = true
 	return nil
 }
 
 func ConfigWithDebug(rnd *sdlRenderer) error {
-	rnd.debug = true
+	rnd.config.debug = true
 	return nil
 }
 
 func ConfigWithNoVSync(rnd *sdlRenderer) error {
-	rnd.novsync = true
+	rnd.config.novsync = true
 	return nil
 }
 
@@ -81,11 +81,13 @@ type sdlRenderer struct {
 	glSquareBuffer,
 	glSquareUVBuffer gl.Buffer
 
-	windowTitle   string
-	windowSize    image.Point
-	resolutionDiv int
-	debug, novsync,
-	fulscreen bool
+	config struct {
+		windowTitle   string
+		windowSize    image.Point
+		resolutionDiv int
+		debug, novsync,
+		fulscreen bool
+	}
 }
 
 func NewRenderer(configs ...Config) (*sdlRenderer, error) {
@@ -108,16 +110,17 @@ func NewRenderer(configs ...Config) (*sdlRenderer, error) {
 		return &rnd, err
 	}
 
-	if rnd.windowSize.X <= 0 {
-		rnd.windowSize.X = int(dm.W)
+	cfg := &rnd.config
+	if cfg.windowSize.X <= 0 {
+		cfg.windowSize.X = int(dm.W)
 	}
-	if rnd.windowSize.Y <= 0 {
-		rnd.windowSize.Y = int(dm.H)
+	if cfg.windowSize.Y <= 0 {
+		cfg.windowSize.Y = int(dm.H)
 	}
 
-	if rnd.resolutionDiv > 0 {
-		rnd.windowSize.X /= rnd.resolutionDiv
-		rnd.windowSize.Y /= rnd.resolutionDiv
+	if cfg.resolutionDiv > 0 {
+		cfg.windowSize.X /= cfg.resolutionDiv
+		cfg.windowSize.Y /= cfg.resolutionDiv
 	}
 
 	sdl.GL_SetAttribute(sdl.GL_RED_SIZE, 8)
@@ -132,7 +135,7 @@ func NewRenderer(configs ...Config) (*sdlRenderer, error) {
 	sdl.GL_SetAttribute(sdl.GL_CONTEXT_PROFILE_MASK, sdl.GL_CONTEXT_PROFILE_CORE)
 	sdl.GL_SetAttribute(sdl.GL_CONTEXT_MAJOR_VERSION, 2)
 
-	rnd.window, err = sdl.CreateWindow(rnd.windowTitle, sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, rnd.windowSize.X, rnd.windowSize.Y, sdlFlags)
+	rnd.window, err = sdl.CreateWindow(cfg.windowTitle, sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, cfg.windowSize.X, cfg.windowSize.Y, sdlFlags)
 	if err != nil {
 		return &rnd, err
 	}
@@ -143,7 +146,7 @@ func NewRenderer(configs ...Config) (*sdlRenderer, error) {
 	}
 
 	gl.ContextWatcher.OnMakeCurrent(nil)
-	if rnd.novsync {
+	if cfg.novsync {
 		sdl.GL_SetSwapInterval(0)
 	} else {
 		sdl.GL_SetSwapInterval(1)
@@ -166,7 +169,9 @@ func NewRenderer(configs ...Config) (*sdlRenderer, error) {
 func (rnd *sdlRenderer) createBlurTexture() {
 	rnd.glBlurTexture = gl.CreateTexture()
 	gl.BindTexture(gl.TEXTURE_2D, rnd.glBlurTexture)
-	gl.TexImage2D(gl.TEXTURE_2D, 0, rnd.windowSize.X, rnd.windowSize.Y, gl.RGB, gl.UNSIGNED_BYTE, nil)
+
+	size := rnd.config.windowSize
+	gl.TexImage2D(gl.TEXTURE_2D, 0, size.X, size.Y, gl.RGB, gl.UNSIGNED_BYTE, nil)
 
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
@@ -277,7 +282,8 @@ func (rnd *sdlRenderer) Clear() *nanovgo.Context {
 
 	gl.Clear(gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)
 
-	w, h := rnd.windowSize.X, rnd.windowSize.Y
+	size := rnd.config.windowSize
+	w, h := size.X, size.Y
 	rnd.vgContext.BeginFrame(w, h, float32(w)/float32(h))
 
 	return rnd.vgContext
@@ -289,7 +295,8 @@ func (rnd *sdlRenderer) Present() {
 	if blurEffect {
 		gl.BindTexture(gl.TEXTURE_2D, rnd.glBlurTexture)
 
-		w, h := rnd.windowSize.X, rnd.windowSize.Y
+		size := rnd.config.windowSize
+		w, h := size.X, size.Y
 		gl.CopyTexImage2D(gl.TEXTURE_2D, 0, gl.RGB, 0, 0, w, h, 0)
 
 		gl.Disable(gl.BLEND)
@@ -299,7 +306,7 @@ func (rnd *sdlRenderer) Present() {
 	}
 
 	sdl.GL_SwapWindow(rnd.window)
-	if rnd.debug {
+	if rnd.config.debug {
 		checkGLError()
 	}
 }
@@ -343,17 +350,17 @@ var vertexShader = `
 var pixelShader = `
 	#version 120
 
+	#define N 4
+
 	uniform sampler2D s_texture;
 	varying vec2 v_uv;
 
 	void main()
 	{
-		const int n = 4;
-
 		vec3 col = texture2D(s_texture, v_uv, 0).xyz;
-		for (int i = 1; i < n; i++)
+		for (int i = 1; i < N; i++)
 			col += texture2D(s_texture, v_uv, i).xyz;
 
-		gl_FragColor = vec4(col / (n-1), 1);
+		gl_FragColor = vec4(col / (N - 1), 1);
 	}
 `

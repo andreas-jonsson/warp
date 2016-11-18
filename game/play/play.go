@@ -18,9 +18,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package play
 
 import (
+	"log"
 	"time"
 
 	"github.com/mode13/nanovgo"
+	"github.com/mode13/nanovgo/svg"
+	"github.com/mode13/warp/data"
 	"github.com/mode13/warp/game"
 	_ "github.com/mode13/warp/game/entity/mothership"
 	"github.com/mode13/warp/game/universe"
@@ -34,13 +37,26 @@ type playState struct {
 	mouseGrab bool
 	cameraPos vec3.T
 
+	svg *svg.Svg
+
 	warping       bool
 	warpPos       vec3.T
 	warpStartTime time.Time
 }
 
 func NewPlayState() *playState {
-	return &playState{uni: universe.NewUniverse()}
+	fp, err := data.FS.Open("tiger.svg")
+	if err != nil {
+		log.Panicln(err)
+	}
+	defer fp.Close()
+
+	svg, err := svg.ParseSvg(fp, 1)
+	if err != nil {
+		log.Panicln(err)
+	}
+
+	return &playState{uni: universe.NewUniverse(), svg: svg}
 }
 
 func (s *playState) Name() string {
@@ -118,6 +134,10 @@ func (s *playState) Render(ctx *nanovgo.Context) error {
 		ctx.SetStrokeColor(nanovgo.RGBA(0, 0, 255, 255))
 		ctx.SetStrokeWidth(2)
 		ctx.Stroke()
+	}
+
+	if err := svg.Render(ctx, s.svg); err != nil {
+		panic(err)
 	}
 
 	return nil
